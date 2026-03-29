@@ -1,0 +1,76 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@keyframes gradientMove {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+  100% { transform: translateY(0px); }
+}
+
+@keyframes fadeUp {
+  0% {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes weatherShift {
+  0% {
+    filter: saturate(1) brightness(1);
+  }
+  50% {
+    filter: saturate(1.12) brightness(1.04);
+  }
+  100% {
+    filter: saturate(1) brightness(1);
+  }
+}
+
+@keyframes colorWipe {
+  0% {
+    clip-path: circle(0% at 100% 100%);
+    opacity: 1;
+  }
+  100% {
+    clip-path: circle(160% at 0% 0%);
+    opacity: 1;
+  }
+}
+
+.animate-float {
+  animation: float 4s ease-in-out infinite;
+}
+
+.animate-gradient {
+  background-size: 200% 200%;
+  animation: gradientMove 5s ease infinite;
+}
+
+.animate-fade-up {
+  animation: fadeUp 650ms ease-out both;
+}
+
+.search-color-wipe {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  animation: colorWipe 1.2s ease-out 1 forwards;
+}
