@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import axios from "axios";
+import { fetchWeatherByCity, fetchWeatherByCoords } from "./api";
 
 function App() {
   const [city, setCity] = useState("");
@@ -19,11 +19,7 @@ function App() {
     try {
       setLoading(true);
 
-      const encodedCity = encodeURIComponent(city.trim());
-
-      const res = await axios.get(
-        `http://127.0.0.1:8000/api/weather/${encodedCity}`
-      );
+      const res = await fetchWeatherByCity(city);
       const condition = res.data?.list?.[0]?.weather?.[0]?.main;
       const targetBackgroundClass = getBackgroundByCondition(condition);
 
@@ -36,9 +32,7 @@ function App() {
         setIsSweepActive(true);
       });
 
-      if (sweepTimeoutRef.current) {
-        clearTimeout(sweepTimeoutRef.current);
-      }
+      if (sweepTimeoutRef.current) clearTimeout(sweepTimeoutRef.current);
 
       sweepTimeoutRef.current = setTimeout(() => {
         setIsSweepActive(false);
@@ -52,36 +46,13 @@ function App() {
     }
   };
 
-  useEffect(() => {
-    return () => {
-      if (sweepTimeoutRef.current) {
-        clearTimeout(sweepTimeoutRef.current);
-      }
-    };
-  }, []);
-
-  const getDailyForecast = (data) => {
-    const daily = {};
-
-    data.list.forEach((item) => {
-      const date = item.dt_txt.split(" ")[0];
-
-      if (!daily[date]) {
-        daily[date] = item;
-      }
-    });
-    return Object.values(daily).slice(0, 5);
-  }
-
   const getLocationWeather = () => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(async (position) => {
         const lat = position.coords.latitude;
         const lon = position.coords.longitude;
 
-        const res = await axios.get(
-          `http://127.0.0.1:8000/api/weather/${lat},${lon}`
-        );
+        const res = await fetchWeatherByCoords(lat, lon);
         const condition = res.data?.list?.[0]?.weather?.[0]?.main;
         const targetBackgroundClass = getBackgroundByCondition(condition);
 
@@ -95,46 +66,39 @@ function App() {
     }
   };
 
+  const getDailyForecast = (data) => {
+    const daily = {};
+    data.list.forEach((item) => {
+      const date = item.dt_txt.split(" ")[0];
+      if (!daily[date]) daily[date] = item;
+    });
+    return Object.values(daily).slice(0, 5);
+  };
+
   const getBackgroundByCondition = (condition) => {
     switch (condition) {
-      case "Clear":
-        return "from-yellow-300 to-orange-500";
-      case "Clouds":
-        return "from-slate-400 to-slate-600";
-      case "Rain":
-        return "from-sky-500 to-blue-700";
-      case "Snow":
-        return "from-cyan-100 to-slate-300";
-      case "Thunderstorm":
-        return "from-indigo-700 to-slate-900";
-      default:
-        return "from-blue-500 to-indigo-700";
+      case "Clear": return "from-yellow-300 to-orange-500";
+      case "Clouds": return "from-slate-400 to-slate-600";
+      case "Rain": return "from-sky-500 to-blue-700";
+      case "Snow": return "from-cyan-100 to-slate-300";
+      case "Thunderstorm": return "from-indigo-700 to-slate-900";
+      default: return "from-blue-500 to-indigo-700";
     }
   };
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString("en-GB", {
-      weekday: "short",
-      day: "2-digit",
-      month: "short",
-    });
-  }
+    return date.toLocaleDateString("en-GB", { weekday: "short", day: "2-digit", month: "short" });
+  };
 
   const getWeatherIcon = (condition) => {
     switch (condition) {
-      case "Clouds":
-        return "☁️";
-      case "Clear":
-        return "☀️";
-      case "Rain":
-        return "🌧️";
-      case "Snow":
-        return "❄️";
-      case "Thunderstorm":
-        return "⛈️";
-      default:
-        return "🌤️";
+      case "Clouds": return "☁️";
+      case "Clear": return "☀️";
+      case "Rain": return "🌧️";
+      case "Snow": return "❄️";
+      case "Thunderstorm": return "⛈️";
+      default: return "🌤️";
     }
   };
 
