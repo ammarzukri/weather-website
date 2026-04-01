@@ -7,27 +7,33 @@ RUN apt-get update && apt-get install -y \
     libxml2-dev \
     zip \
     unzip \
-    nginx
+    nginx \
+    curl
 
 # Install PHP extensions
 RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd
 
-# Get latest Composer
+# Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 # Set working directory
 WORKDIR /var/www
 
-# Copy project files
-COPY . /var/www
+# Copy project
+COPY . .
 
-# Install dependencies
+# Install Laravel dependencies
 RUN composer install --no-dev --optimize-autoloader
 
-# Setup Nginx and permissions
-RUN chown -R www-data:www-data /var/www/storage /var/www/cache
+# Set correct permissions
+RUN chown -R www-data:www-data /var/www \
+    && chmod -R 775 /var/www/storage /var/www/bootstrap/cache
+
+# Copy nginx config
 COPY .render/nginx.conf /etc/nginx/sites-available/default
 
+# Expose port
 EXPOSE 80
 
-CMD service nginx start && php-fpm
+# Start both services properly
+CMD ["sh", "-c", "php-fpm & nginx -g 'daemon off;'"]
